@@ -59,7 +59,7 @@ def simulate_visit(url, session):
         # Log response details
         logging.info(f"Visit sent - Status: {response.status_code}, URL: {response.url}")
         logging.debug(f"Response headers: {response.headers}")
-        
+
         # Check for common anti-bot indicators
         if "cf-ray" in response.headers or "cloudflare" in response.text.lower():
             logging.warning("Cloudflare protection detected")
@@ -82,14 +82,26 @@ def main():
         logging.error("Invalid URL. Please include http:// or https://")
         return
 
+    # Prompt for number of visits
+    try:
+        num_visits_input = input("Please enter the number of visits to simulate (default 1000): ").strip()
+        num_visits = int(num_visits_input) if num_visits_input else 1000
+        if num_visits <= 0:
+            logging.error("Number of visits must be positive")
+            return
+        if num_visits > 10000:
+            logging.warning("High visit counts (>10,000) may overload your server, trigger anti-bot protections, or violate hosting terms. Proceed with caution.")
+    except ValueError:
+        logging.error("Invalid input. Please enter a number")
+        return
+
     # Extract domain for logging
     domain = urlparse(url).netloc
-    logging.info(f"Testing website: {domain}")
+    logging.info(f"Testing website: {domain} with {num_visits} visits")
 
-    # Number of visits to simulate (100 for testing)
-    num_visits = 100
-    min_delay = 1  # Minimum delay between visits
-    max_delay = 3  # Maximum delay for randomization
+    # Minimum and maximum delay between visits
+    min_delay = 1
+    max_delay = 3
 
     # Create a session to persist cookies and mimic a real browser
     session = requests.Session()
